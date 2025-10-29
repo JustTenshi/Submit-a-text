@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lead Details</title>
+</head>
+<body>
+    <h2>Lead Info</h2>
+    <p><strong>ID:</strong> {{ lead.id }}</p>
+    <p><strong>Phone:</strong> {{ lead.phone }}</p>
+    <p><strong>Agent:</strong> {{ lead.agent_name }}</p>
+    <p><strong>Office:</strong> {{ lead.office }}</p>
+    <p><strong>Plan:</strong> {{ lead.plan_type }}</p>
+    <p><strong>Created:</strong> {{ lead.created_on }}</p>
+
+    <a href="/admin?key={{ request.query_params.get('key') }}">← Back</a>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales Leads</title>
+</head>
+<body>
+    <a href="/logout">Logout</a>
+    <h2>Recent Leads</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Phone</th>
+            <th>Office</th>
+            <th>Plan Type</th>
+            <th>Created</th>
+        </tr>
+        {% for lead in leads %}
+        <tr>
+            <td><a href="/admin/lead/{{ lead.id }}?key={{ request.query_params.get('key') }}">{{ lead.id }}</a></td>
+            <td>{{ lead.phone }}</td>
+            <td>{{ lead.office }}</td>
+            <td>{{ lead.plan_type }}</td>
+            <td>{{ lead.created_on }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
