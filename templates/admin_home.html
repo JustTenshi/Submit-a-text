@@ -110,6 +110,32 @@
         border-color: #9ca3af;
     }
 
+    form {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 16px;
+        border-radius: 8px;
+        }
+        label {
+          color: #374151;
+        }
+
+    form {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 16px;
+      border-radius: 8px;
+    }
+    input[type="text"], input[type="date"], select {
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+    }
+
+    
+
   </style>
 </head>
 <body>
@@ -145,33 +171,74 @@
       <div class="alert alert-error">🗑️ Record deleted successfully.</div>
     {% endif %}
 
+    <!-- Filters -->
+<!-- Filters -->
+<form method="get" action="/admin" class="flex flex-wrap items-end gap-4 mb-6">
+  <div>
+    <label for="limit" class="block text-sm font-medium text-gray-700">Show</label>
+    <select name="limit" id="limit" class="border rounded-md p-2 w-28">
+      <option value="10" {% if limit == 10 %}selected{% endif %}>Top 10</option>
+      <option value="50" {% if limit == 50 %}selected{% endif %}>Top 50</option>
+      <option value="100" {% if limit == 100 %}selected{% endif %}>Top 100</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="from_date" class="block text-sm font-medium text-gray-700">From</label>
+    <input type="date" name="from_date" id="from_date" value="{{ from_date or '' }}" class="border rounded-md p-2">
+  </div>
+
+  <div>
+    <label for="to_date" class="block text-sm font-medium text-gray-700">To</label>
+    <input type="date" name="to_date" id="to_date" value="{{ to_date or '' }}" class="border rounded-md p-2">
+  </div>
+
+  <div>
+    <label for="search" class="block text-sm font-medium text-gray-700">Search (Phone / Member ID)</label>
+    <input type="text" name="search" id="search" placeholder="e.g. +1305..." value="{{ search or '' }}" class="border rounded-md p-2 w-56">
+  </div>
+
+  <div>
+    <button type="submit" class="btn btn-resend">Filter</button>
+  </div>
+
+  <div>
+    <a href="/admin?today=true" class="btn btn-outline">Today</a>
+  </div>
+</form>
+
+
+
     <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Phone</th>
-          <th>Office</th>
-          <th>Plan Type</th>
-          <th>Created On</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sale in sales %}
-        <tr>
-          <td>{{ sale.id }}</td>
-          <td>{{ sale.phone }}</td>
-          <td>{{ sale.office }}</td>
-          <td>{{ sale.plan_type }}</td>
-          <td>{{ sale.created_on.strftime("%Y-%m-%d %H:%M") if sale.created_on else "" }}</td>
-          <td>
-            <a href="/admin/resend/{{ sale.id }}" class="btn btn-resend">Resend</a>
-            <a href="/admin/delete/{{ sale.id }}" class="btn btn-delete" onclick="return confirm('Delete this record?')">Delete</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Phone</th>
+      <th>Member ID</th>
+      <th>Office</th>
+      <th>Plan Type</th>
+      <th>Created On</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sale in sales %}
+    <tr>
+      <td>{{ sale.id }}</td>
+      <td>{{ sale.phone }}</td>
+      <td>{{ sale.health_id or '' }}</td>
+      <td>{{ sale.office }}</td>
+      <td>{{ sale.plan_type }}</td>
+      <td>{{ sale.created_on.strftime("%Y-%m-%d") if sale.created_on else "" }}</td>
+      <td>
+        <a href="/admin/resend/{{ sale.id }}" class="btn btn-resend">Resend</a>
+        <a href="/admin/delete/{{ sale.id }}" class="btn btn-delete" onclick="return confirm('Delete this record?')">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 
     
   </div>

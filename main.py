@@ -7,6 +7,7 @@ import os
 import re
 import requests
 from starlette.middleware.sessions import SessionMiddleware
+from datetime import datetime, date
 
 
 # Load environment variables
@@ -90,38 +91,60 @@ async def login(request: Request, username: str = Form(...), password: str = For
 
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_home(request: Request, msg: str = None):
+async def admin_home(
+    request: Request,
+    limit: int = 50,
+    from_date: str = None,
+    to_date: str = None,
+    today: bool = False,
+    search: str = None
+):
     if not request.session.get("logged_in"):
         return RedirectResponse(url="/", status_code=303)
 
-    sales_rows = fetch_all("""
-        SELECT id, phone, office, plan_type, created_on
+    query = """
+        SELECT id, phone, health_id, office, plan_type, created_on
         FROM sales
-        ORDER BY created_on DESC
-        LIMIT 50;
-    """)
+    """
+    where_clauses = []
+    params = []
+
+    if today:
+        where_clauses.append("DATE(created_on) = CURRENT_DATE")
+    if from_date and to_date:
+        where_clauses.append("DATE(created_on) BETWEEN %s AND %s")
+        params.extend([from_date, to_date])
+    elif from_date:
+        where_clauses.append("DATE(created_on) >= %s")
+        params.append(from_date)
+    elif to_date:
+        where_clauses.append("DATE(created_on) <= %s")
+        params.append(to_date)
+    if search:
+        where_clauses.append("(phone ILIKE %s OR health_id ILIKE %s)")
+        search_term = f"%{search}%"
+        params.extend([search_term, search_term])
+
+    if where_clauses:
+        query += " WHERE " + " AND ".join(where_clauses)
+
+    query += " ORDER BY created_on DESC LIMIT %s;"
+    params.append(limit)
+
+    sales_rows = fetch_all(query, tuple(params))
 
     return templates.TemplateResponse(
         "admin_home.html",
-        {"request": request, "sales": sales_rows, "msg": msg}
+        {
+            "request": request,
+            "sales": sales_rows,
+            "limit": limit,
+            "from_date": from_date,
+            "to_date": to_date,
+            "search": search
+        }
     )
 
-
-
-@app.get("/admin/sale/{sale_id}", response_class=HTMLResponse)
-async def admin_lead(request: Request, sale_id: int):
-    if not request.session.get("logged_in"):
-        return RedirectResponse(url="/", status_code=303)
-
-
-    sale = fetch_one("SELECT * FROM sales WHERE id=%s;", (sale_id,))
-    if not sale:
-        return HTMLResponse("<h3>Sale not found</h3>", status_code=404)
-
-    return templates.TemplateResponse(
-        "admin_lead.html",
-        {"request": request, "lead": sale}
-    )
 
 
 # ======================
