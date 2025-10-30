@@ -1,28 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sales Leads</title>
+  <meta charset="UTF-8">
+  <title>Submit-a-Text | Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Optional: include Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* fallback styling if Tailwind fails to load */
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 30px 40px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: white;
+      transition: background 0.2s;
+    }
+
+    .btn-delete { background: #ef4444; }
+    .btn-delete:hover { background: #dc2626; }
+    .btn-resend { background: #3b82f6; }
+    .btn-resend:hover { background: #2563eb; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    tr:hover {
+      background: #f3f4f6;
+    }
+
+    .alert {
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadein 0.3s;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #7f1d1d;
+      border: 1px solid #fca5a5;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #d1d5db;
+        color: #374151;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-outline:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+  </style>
 </head>
 <body>
-    <a href="/logout">Logout</a>
-    <h2>Recent Leads</h2>
-    <table border="1">
+
+  <div class="container">
+    <body>
+
+  <div class="container">
+
+    <!-- Modern top header bar -->
+    <div class="flex justify-between items-center mb-6 border-b pb-3">
+      <h1 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+        📊 Admin Dashboard
+      </h1>
+
+      <a href="/logout" class="btn btn-outline flex items-center gap-1 hover:bg-gray-100">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             fill="none" viewBox="0 0 24 24" 
+             stroke-width="1.5" stroke="currentColor" 
+             class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" 
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12h-9m0 0l3-3m-3 3l3 3" />
+        </svg>
+        Logout
+      </a>
+    </div>
+
+
+
+    {% if msg == "sent" %}
+      <div class="alert alert-success">✅ Message sent successfully!</div>
+    {% elif msg == "deleted" %}
+      <div class="alert alert-error">🗑️ Record deleted successfully.</div>
+    {% endif %}
+
+    <table>
+      <thead>
         <tr>
-            <th>ID</th>
-            <th>Phone</th>
-            <th>Office</th>
-            <th>Plan Type</th>
-            <th>Created</th>
+          <th>ID</th>
+          <th>Phone</th>
+          <th>Office</th>
+          <th>Plan Type</th>
+          <th>Created On</th>
+          <th>Actions</th>
         </tr>
-        {% for lead in leads %}
+      </thead>
+      <tbody>
+        {% for sale in sales %}
         <tr>
-            <td><a href="/admin/lead/{{ lead.id }}?key={{ request.query_params.get('key') }}">{{ lead.id }}</a></td>
-            <td>{{ lead.phone }}</td>
-            <td>{{ lead.office }}</td>
-            <td>{{ lead.plan_type }}</td>
-            <td>{{ lead.created_on }}</td>
+          <td>{{ sale.id }}</td>
+          <td>{{ sale.phone }}</td>
+          <td>{{ sale.office }}</td>
+          <td>{{ sale.plan_type }}</td>
+          <td>{{ sale.created_on.strftime("%Y-%m-%d %H:%M") if sale.created_on else "" }}</td>
+          <td>
+            <a href="/admin/resend/{{ sale.id }}" class="btn btn-resend">Resend</a>
+            <a href="/admin/delete/{{ sale.id }}" class="btn btn-delete" onclick="return confirm('Delete this record?')">Delete</a>
+          </td>
         </tr>
         {% endfor %}
+      </tbody>
     </table>
+
+    
+  </div>
+
+  <script>
+    // auto-hide alerts after 3 seconds
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+    }, 3000);
+  </script>
+
 </body>
 </html>

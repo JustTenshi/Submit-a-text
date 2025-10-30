@@ -20,7 +20,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET", "su
 
 
 # Environment variables
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "AngelSecure!")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 TELNYX_API_KEY = os.getenv("TELNYX_API_KEY")
 TELNYX_MESSAGING_PROFILE_ID = os.getenv("TELNYX_MESSAGING_PROFILE_ID")
@@ -53,8 +53,6 @@ def send_sms_via_telnyx(to_number: str, message: str):
     "to": to_number,
     "text": message,
     "messaging_profile_id": TELNYX_MESSAGING_PROFILE_ID,
-    "type": "SMS",
-    "use_profile_webhooks": True
     }
 
 
@@ -92,10 +90,9 @@ async def login(request: Request, username: str = Form(...), password: str = For
 
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_home(request: Request):
+async def admin_home(request: Request, msg: str = None):
     if not request.session.get("logged_in"):
         return RedirectResponse(url="/", status_code=303)
-
 
     sales_rows = fetch_all("""
         SELECT id, phone, office, plan_type, created_on
@@ -106,8 +103,9 @@ async def admin_home(request: Request):
 
     return templates.TemplateResponse(
         "admin_home.html",
-        {"request": request, "sales": sales_rows}
+        {"request": request, "sales": sales_rows, "msg": msg}
     )
+
 
 
 @app.get("/admin/sale/{sale_id}", response_class=HTMLResponse)
@@ -258,4 +256,31 @@ async def inbound_sms(request: Request):
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/", status_code=303)
+
+@app.get("/admin/delete/{sale_id}")
+async def delete_sale(request: Request, sale_id: int):
+    if not request.session.get("logged_in"):
+        return RedirectResponse(url="/", status_code=303)
+
+    execute("DELETE FROM sales WHERE id = %s;", (sale_id,))
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.get("/admin/resend/{sale_id}")
+async def resend_sms(request: Request, sale_id: int):
+    if not request.session.get("logged_in"):
+        return RedirectResponse(url="/", status_code=303)
+
+    sale = fetch_one("SELECT phone FROM sales WHERE id = %s;", (sale_id,))
+    if not sale:
+        return HTMLResponse("<h3>Sale not found</h3>", status_code=404)
+
+    phone = sale["phone"]
+    text_msg = "Thank you for enrolling! We're here to help with your coverage. Reply STOP to opt out."
+    send_sms_via_telnyx(phone, text_msg)
+
+    # ✅ redirect with query string
+    return RedirectResponse(url="/admin?msg=sent", status_code=303)
+
+
 
