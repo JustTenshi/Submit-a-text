@@ -304,6 +304,3 @@ async def resend_sms(request: Request, sale_id: int):
 
     # ✅ redirect with query string
     return RedirectResponse(url="/admin?msg=sent", status_code=303)
-
-
-

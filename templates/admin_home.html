@@ -1,36 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Submit-a-Text | Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Optional: include Tailwind via CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* fallback styling if Tailwind fails to load */
-    body {
+    html, body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
+      min-height: 100%;
+      transition: background 0.6s ease, color 0.6s ease;
+    }
+
+    body.dark {
+      background: radial-gradient(ellipse at top right, #0b0c1a 0%, #030617 80%);
+      color: #f1f5f9;
+    }
+
+    body.light {
+      background: linear-gradient(to bottom right, #edf2f7, #e0e7ff);
+      color: #1f2937;
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1150px;
       margin: 40px auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 0 40px rgba(59,130,246,0.2);
       padding: 30px 40px;
+      transition: all 0.5s ease;
     }
 
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin-bottom: 1.5rem;
+    body.light .container {
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background: rgba(59,130,246,0.1);
+      color: #93c5fd;
+    }
+
+    body.light th {
+      background: #f9fafb;
+      color: #374151;
+    }
+
+    tr:hover {
+      background: rgba(59,130,246,0.08);
+    }
+
+    body.light tr:hover {
+      background: #f3f4f6;
     }
 
     .btn {
@@ -40,35 +64,34 @@
       font-size: 0.9rem;
       font-weight: 500;
       text-decoration: none;
-      color: white;
-      transition: background 0.2s;
+      transition: all 0.3s ease;
     }
 
-    .btn-delete { background: #ef4444; }
-    .btn-delete:hover { background: #dc2626; }
-    .btn-resend { background: #3b82f6; }
+    .btn-resend {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 0 10px rgba(59,130,246,0.5);
+    }
+
     .btn-resend:hover { background: #2563eb; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
+    .btn-delete {
+      background: #ef4444;
+      color: white;
+      box-shadow: 0 0 10px rgba(239,68,68,0.5);
     }
 
-    th, td {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid #e5e7eb;
+    .btn-delete:hover { background: #dc2626; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(147,197,253,0.4);
+      color: #93c5fd;
     }
 
-    th {
-      background: #f9fafb;
-      font-weight: 600;
-      color: #374151;
-    }
-
-    tr:hover {
-      background: #f3f4f6;
+    .btn-outline:hover {
+      background: rgba(59,130,246,0.1);
+      border-color: #60a5fa;
     }
 
     .alert {
@@ -76,22 +99,19 @@
       border-radius: 8px;
       margin-bottom: 20px;
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       animation: fadein 0.3s;
     }
 
     .alert-success {
-      background: #d1fae5;
-      color: #065f46;
-      border: 1px solid #6ee7b7;
+      background: rgba(16,185,129,0.2);
+      color: #6ee7b7;
+      border: 1px solid #34d399;
     }
 
     .alert-error {
-      background: #fee2e2;
-      color: #7f1d1d;
-      border: 1px solid #fca5a5;
+      background: rgba(239,68,68,0.2);
+      color: #fca5a5;
+      border: 1px solid #ef4444;
     }
 
     @keyframes fadein {
@@ -99,72 +119,31 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .btn-outline {
-        background: transparent;
-        border: 1px solid #d1d5db;
-        color: #374151;
-        transition: all 0.2s ease-in-out;
-    }
-    .btn-outline:hover {
-        background: #f3f4f6;
-        border-color: #9ca3af;
+    #settingsModal {
+      animation: fadeIn 0.25s ease-out;
     }
 
-    form {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        padding: 16px;
-        border-radius: 8px;
-        }
-        label {
-          color: #374151;
-        }
-
-    form {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      padding: 16px;
-      border-radius: 8px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
     }
-    input[type="text"], input[type="date"], select {
-      outline: none;
-    }
-    input:focus, select:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
-    }
-
-    
-
   </style>
 </head>
-<body>
-
-  <div class="container">
-    <body>
+<body class="dark">
 
   <div class="container">
 
-    <!-- Modern top header bar -->
-    <div class="flex justify-between items-center mb-6 border-b pb-3">
-      <h1 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-        📊 Admin Dashboard
-      </h1>
-
-      <a href="/logout" class="btn btn-outline flex items-center gap-1 hover:bg-gray-100">
-        <svg xmlns="http://www.w3.org/2000/svg" 
-             fill="none" viewBox="0 0 24 24" 
-             stroke-width="1.5" stroke="currentColor" 
-             class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" 
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12h-9m0 0l3-3m-3 3l3 3" />
-        </svg>
-        Logout
-      </a>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold tracking-wide"> Submit-a-Text Dashboard</h1>
+      <div class="flex items-center gap-4">
+        <button id="modeToggle" class="btn btn-outline">Dark Mode / Light Mode</button>
+        <button id="settingsBtn" class="btn btn-outline">⚙️ Settings</button>
+        <a href="/logout" class="btn btn-delete">Logout</a>
+      </div>
     </div>
 
-
-
+    <!-- Alerts -->
     {% if msg == "sent" %}
       <div class="alert alert-success">✅ Message sent successfully!</div>
     {% elif msg == "deleted" %}
@@ -172,83 +151,150 @@
     {% endif %}
 
     <!-- Filters -->
-<!-- Filters -->
-<form method="get" action="/admin" class="flex flex-wrap items-end gap-4 mb-6">
-  <div>
-    <label for="limit" class="block text-sm font-medium text-gray-700">Show</label>
-    <select name="limit" id="limit" class="border rounded-md p-2 w-28">
-      <option value="10" {% if limit == 10 %}selected{% endif %}>Top 10</option>
-      <option value="50" {% if limit == 50 %}selected{% endif %}>Top 50</option>
-      <option value="100" {% if limit == 100 %}selected{% endif %}>Top 100</option>
-    </select>
+    <form method="get" action="/admin" class="flex flex-wrap items-end gap-4 mb-6">
+      <div>
+        <label for="limit" class="block text-sm font-medium">Show</label>
+        <select name="limit" id="limit" class="border rounded-md p-2 w-28 bg-transparent text-inherit">
+          <option value="10" {% if limit == 10 %}selected{% endif %}>Top 10</option>
+          <option value="50" {% if limit == 50 %}selected{% endif %}>Top 50</option>
+          <option value="100" {% if limit == 100 %}selected{% endif %}>Top 100</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="from_date" class="block text-sm font-medium">From</label>
+        <input type="date" name="from_date" id="from_date" value="{{ from_date or '' }}" class="border rounded-md p-2 bg-transparent text-inherit">
+      </div>
+
+      <div>
+        <label for="to_date" class="block text-sm font-medium">To</label>
+        <input type="date" name="to_date" id="to_date" value="{{ to_date or '' }}" class="border rounded-md p-2 bg-transparent text-inherit">
+      </div>
+
+      <div>
+        <label for="search" class="block text-sm font-medium">Search (Phone / Member ID)</label>
+        <input type="text" name="search" id="search" placeholder="e.g. +1305..." value="{{ search or '' }}" class="border rounded-md p-2 w-56 bg-transparent text-inherit">
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-resend">Filter</button>
+      </div>
+
+      <div>
+        <a href="/admin?today=true" class="btn btn-outline">Today</a>
+      </div>
+    </form>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full rounded-lg overflow-hidden">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Phone</th>
+            <th>Member ID</th>
+            <th>Office</th>
+            <th>Plan Type</th>
+            <th>Created On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr>
+            <td>{{ sale.id }}</td>
+            <td>{{ sale.phone }}</td>
+            <td>{{ sale.health_id or '' }}</td>
+            <td>{{ sale.office }}</td>
+            <td>{{ sale.plan_type }}</td>
+            <td>{{ sale.created_on.strftime("%Y-%m-%d") if sale.created_on else "" }}</td>
+            <td>
+              <a href="/admin/resend/{{ sale.id }}" class="btn btn-resend">Resend</a>
+              <a href="/admin/delete/{{ sale.id }}" class="btn btn-delete" onclick="return confirm('Delete this record?')">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div>
-    <label for="from_date" class="block text-sm font-medium text-gray-700">From</label>
-    <input type="date" name="from_date" id="from_date" value="{{ from_date or '' }}" class="border rounded-md p-2">
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden">
+    <div class="bg-gray-900 text-gray-100 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+      <button id="closeSettings" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl">&times;</button>
+      <h2 class="text-xl font-semibold mb-4">⚙️ Message Settings</h2>
+
+      <form id="settingsForm" class="space-y-4">
+        <label class="block font-medium mb-1">Default SMS Message</label>
+        <textarea id="messageText" rows="4" class="w-full border rounded-md p-3 bg-transparent text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancelSettings" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-resend">Save</button>
+        </div>
+      </form>
+
+      <div id="settingsAlert" class="mt-4 text-sm hidden"></div>
+    </div>
   </div>
 
-  <div>
-    <label for="to_date" class="block text-sm font-medium text-gray-700">To</label>
-    <input type="date" name="to_date" id="to_date" value="{{ to_date or '' }}" class="border rounded-md p-2">
-  </div>
-
-  <div>
-    <label for="search" class="block text-sm font-medium text-gray-700">Search (Phone / Member ID)</label>
-    <input type="text" name="search" id="search" placeholder="e.g. +1305..." value="{{ search or '' }}" class="border rounded-md p-2 w-56">
-  </div>
-
-  <div>
-    <button type="submit" class="btn btn-resend">Filter</button>
-  </div>
-
-  <div>
-    <a href="/admin?today=true" class="btn btn-outline">Today</a>
-  </div>
-</form>
-
-
-
-    <table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Phone</th>
-      <th>Member ID</th>
-      <th>Office</th>
-      <th>Plan Type</th>
-      <th>Created On</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for sale in sales %}
-    <tr>
-      <td>{{ sale.id }}</td>
-      <td>{{ sale.phone }}</td>
-      <td>{{ sale.health_id or '' }}</td>
-      <td>{{ sale.office }}</td>
-      <td>{{ sale.plan_type }}</td>
-      <td>{{ sale.created_on.strftime("%Y-%m-%d") if sale.created_on else "" }}</td>
-      <td>
-        <a href="/admin/resend/{{ sale.id }}" class="btn btn-resend">Resend</a>
-        <a href="/admin/delete/{{ sale.id }}" class="btn btn-delete" onclick="return confirm('Delete this record?')">Delete</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-
-    
-  </div>
-
+  <!-- JS -->
   <script>
-    // auto-hide alerts after 3 seconds
+    // Theme Toggle
+    const modeToggle = document.getElementById('modeToggle');
+    const body = document.body;
+    modeToggle.addEventListener('click', () => {
+      if (body.classList.contains('dark')) {
+        body.classList.remove('dark');
+        body.classList.add('light');
+      } else {
+        body.classList.remove('light');
+        body.classList.add('dark');
+      }
+    });
+
+    // Auto-hide alerts
     setTimeout(() => {
       document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
     }, 3000);
-  </script>
 
+    // Settings modal logic
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettings = document.getElementById('closeSettings');
+    const cancelSettings = document.getElementById('cancelSettings');
+    const settingsForm = document.getElementById('settingsForm');
+    const messageText = document.getElementById('messageText');
+    const settingsAlert = document.getElementById('settingsAlert');
+
+    settingsBtn.addEventListener('click', async () => {
+      settingsModal.classList.remove('hidden');
+      const resp = await fetch('/api/get-settings');
+      const data = await resp.json();
+      messageText.value = data.message || '';
+    });
+
+    function closeModal() {
+      settingsModal.classList.add('hidden');
+      settingsAlert.classList.add('hidden');
+    }
+    closeSettings.addEventListener('click', closeModal);
+    cancelSettings.addEventListener('click', closeModal);
+
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resp = await fetch('/api/save-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageText.value })
+      });
+      const data = await resp.json();
+      settingsAlert.classList.remove('hidden');
+      settingsAlert.textContent = data.ok ? '✅ Message updated successfully!' : '❌ Failed to update.';
+      settingsAlert.className = data.ok ? 'mt-4 text-green-400' : 'mt-4 text-red-400';
+      setTimeout(closeModal, 1500);
+    });
+  </script>
 </body>
 </html>
